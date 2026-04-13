@@ -107,42 +107,34 @@ def _try_download(ticker: str, **kwargs) -> pd.DataFrame:
 # Public API
 # ─────────────────────────────────────────────────────────────────────────────
 
-def fetch_stock_data(
-    ticker: str,
-    years: int = MAX_LOOKBACK_YEARS,
-) -> pd.DataFrame:
-    """
-    Download daily OHLCV data for *ticker* with a progressive fallback:
-        15y → 10y → 5y → 2y → max (period)
+import yfinance as yf
+import pandas as pd
 
-    All downloads end at yesterday — identical row count across every call
-    within the same calendar day, eliminating the length-mismatch race condition.
+def fetch_stock_data(ticker: str) -> pd.DataFrame:
+    try:
+        df = yf.download(ticker, period="15y", interval="1d", progress=False)
 
-    Returns
-    -------
-    pd.DataFrame  columns: Open, High, Low, Close, Volume
-                  index: tz-naive DatetimeIndex, no duplicates, no NaN
-    Raises
-    ------
-    ValueError  if no data (>= 30 rows) can be fetched after all fallbacks.
-    """
-    fallback_years = sorted(set([years, 10, 5, 2]), reverse=True)
+        if df is None or df.empty:
+            raise ValueError("Empty data")
 
-    for yrs in fallback_years:
-        start = (datetime.today() - timedelta(days=yrs * 365)).strftime("%Y-%m-%d")
-        df    = _try_download(ticker, start=start)
-        if len(df) >= 30:
-            return df
-
-    # Final fallback: "max" period (new / limited-history stocks)
-    df = _try_download(ticker, period="max")
-    if len(df) >= 30:
+        df = df.dropna()
         return df
 
-    raise ValueError(
-        f"No usable data for '{ticker}'. "
-        "Check the symbol or your internet connection."
-    )
+    except Exception:
+        # 🔥 fallback (try without .NS)
+        try:
+            if ticker.endswith(".NS"):
+                alt = ticker.replace(".NS", "")
+                df = yf.download(alt, period="5y", progress=False)
+
+                if df is not None and not df.empty:
+                    return df.dropna()
+
+        except:
+            pass
+
+        # final fallback
+        return pd.DataFrame()
 
 
 def get_current_price(ticker: str) -> float:
