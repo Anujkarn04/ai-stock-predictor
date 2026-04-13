@@ -41,8 +41,8 @@ USE_SYNTHETIC   = True
 SYNTHETIC_RATIO = 0.3
 
 # ── LSTM hyper-parameters ─────────────────────────────────────────────────────
-SEQUENCE_LENGTH = 60
-LSTM_EPOCHS     = 50
+SEQUENCE_LENGTH = 30
+LSTM_EPOCHS     = 5
 LSTM_BATCH_SIZE = 32
 LSTM_UNITS      = 64
 TEST_SPLIT      = 0.2

@@ -47,7 +47,7 @@ def train_all(ticker: str, days: int = PREDICTION_DAYS):
     # 4. Train LSTM
     print("\n[4/4] Training LSTM (this may take a few minutes) …")
     lstm = StockLSTM(ticker)
-    lstm_metrics = lstm.train(df, verbose=0)
+    lstm_metrics = lstm.train(df)
     lstm.save()
     print(f"      LSTM → RMSE: {lstm_metrics['RMSE']}  |  MAE: {lstm_metrics['MAE']}")
 
