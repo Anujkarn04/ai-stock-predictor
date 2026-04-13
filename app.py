@@ -12,7 +12,7 @@ Architecture
 import streamlit as st
 import pandas as pd
 import sys, os
-
+IS_CLOUD = os.getenv("STREAMLIT_SERVER_RUN_ON_SAVE") is not None
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # ── Bootstrap DB ─────────────────────────────────────────────────────────────
@@ -277,7 +277,11 @@ elif page == "🔮 Predict":
     with ca:
         days = st.slider("Forecast horizon (days)", 1, 30, PREDICTION_DAYS)
     with cb:
-        model_type = st.selectbox("Model", ["LSTM","LR","Both"])
+        if IS_CLOUD:
+            model_type = st.selectbox("Model", ["LR"])
+            st.info("⚡ LSTM model is available in local version only.")
+        else:
+            model_type = st.selectbox("Model", ["LSTM","LR","Both"])
     with cc:
         run = st.button("▶ Run Forecast", type="primary", use_container_width=True)
 
@@ -288,6 +292,10 @@ elif page == "🔮 Predict":
     if run or st.session_state.get("last_pred_ticker") == ticker:
         with st.spinner(f"Generating {days}-day forecast …"):
             try:
+                # Force LR on cloud (extra safety)
+                if IS_CLOUD:
+                    model_type = "LR"
+
                 res = _predict(ticker, days, model_type)
                 df  = res["historical"]
 
