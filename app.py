@@ -196,7 +196,21 @@ if page == "📊 Dashboard":
         # ── FIX: all metadata access is crash-proof ───────────────────────────
         info = get_stock_info(ticker)    # returns safe defaults on failure
         cur  = get_current_price(ticker) # returns 0.0 on failure
-        df   = _fetch(ticker)
+        df = _fetch(ticker)
+
+        # 🔥 Safety checks (add THIS)
+        if df is None or df.empty:
+            st.error(f"No usable data for '{ticker}'. Try another stock.")
+            st.stop()
+
+        required_cols = ["Open", "High", "Low", "Close"]
+        if not all(col in df.columns for col in required_cols):
+            st.error("Stock data format invalid. Try another stock.")
+            st.stop()
+
+        if len(df) < 2:
+            st.warning("Not enough data to display chart.")
+            st.stop()
 
         # ── KPI row ──────────────────────────────────────────────────────────
         c1, c2, c3, c4, c5 = st.columns(5)
@@ -541,8 +555,22 @@ elif page == "🔍 Insights":
     st.title("🔍 Market Insights")
 
     try:
-        df   = _fetch(ticker)
-        risk = get_risk_score(df)
+        df = _fetch(ticker)
+
+        # 🔥 Safety checks (add THIS)
+        if df is None or df.empty:
+            st.error(f"No usable data for '{ticker}'. Try another stock.")
+            st.stop()
+
+        required_cols = ["Open", "High", "Low", "Close"]
+        if not all(col in df.columns for col in required_cols):
+            st.error("Stock data format invalid. Try another stock.")
+            st.stop()
+
+        if len(df) < 2:
+            st.warning("Not enough data to display chart.")
+            st.stop()
+            risk = get_risk_score(df)
 
         # ── Risk banner ───────────────────────────────────────────────────────
         badge_cls = {"Low": "badge-green", "Medium": "badge-yellow",
