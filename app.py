@@ -153,7 +153,7 @@ with st.sidebar:
 #                   lifetime of the Streamlit server process (model objects,
 #                   DB connections, etc.).  NEVER reloads from disk on rerun.
 
-@st.cache_data(ttl=300, show_spinner=False)
+@st.cache_data(ttl=900, show_spinner=False)
 def _fetch(t: str):
     """Fetch OHLCV data once; cached 5 min per ticker."""
     return fetch_stock_data(t)
@@ -570,7 +570,8 @@ elif page == "🔍 Insights":
         if len(df) < 2:
             st.warning("Not enough data to display chart.")
             st.stop()
-            risk = get_risk_score(df)
+            
+        risk = get_risk_score(df)
 
         # ── Risk banner ───────────────────────────────────────────────────────
         badge_cls = {"Low": "badge-green", "Medium": "badge-yellow",
